@@ -1,3 +1,7 @@
+# VCS / CI — not needed in build context
+.git
+.github
+
 # build output
 dist/
 .astro/
@@ -5,6 +9,9 @@ coverage/
 
 # dependencies
 node_modules/
+
+# test artifacts
+test-results
 
 # logs
 npm-debug.log*
@@ -25,3 +32,6 @@ pnpm-debug.log*
 
 # Heroku Postgres dumps
 *.dump
+
+# project data files not needed at build time
+vsat-value-model.edn
