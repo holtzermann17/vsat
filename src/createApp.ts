@@ -26,14 +26,15 @@ import routeStoryLinks from "./domain/story/route/routeStoryLinks.js";
 import routeUnpublishStory from "./domain/story/route/routeUnpublishStory.js";
 import routeUploadSceneAudio from "./domain/story/route/routeUploadSceneAudio.js";
 import routeUploadSceneImage from "./domain/story/route/routeUploadSceneImage.js";
+import assertIsAuthorHandler from "./domain/story/support/assertIsAuthorHandler.js";
 import assertIsAuthorOfTheStoryHandler from "./domain/story/support/assertIsAuthorOfTheStoryHandler.js";
 import isAuthorOfTheStory from "./domain/story/support/isAuthorOfTheStory.js";
 import loadConfig from "./environment/config.js";
 import getEnvironment from "./environment/getEnvironment.js";
-import enableSharedArrayBufferMiddleware from "./server/enableSharedArrayBufferMiddleware.js";
 import type { StartServer } from "./server/createServer.js";
 import httpSession from "./server/httpSessionMiddleware.js";
 import routeHealthcheck from "./server/routeHealthcheck.js";
+import { withHeadersToEnableSharedArrayBufferUsage } from "./server/staticHeadersMiddleware.js";
 
 export async function createAppParts(): Promise<{
   log: Logger;
@@ -112,9 +113,11 @@ export async function createAppParts(): Promise<{
       config.authentication.pathsRequiringAuthentication,
     ),
     ...(sharedArrayBufferHeadersEnabled
-      ? [enableSharedArrayBufferMiddleware()]
+      ? [withHeadersToEnableSharedArrayBufferUsage()]
       : []),
   ];
+
+  const assertIsAuthor = assertIsAuthorHandler(log);
 
   const assertIsAuthorOfTheStory = assertIsAuthorOfTheStoryHandler(
     log,
@@ -151,11 +154,7 @@ export async function createAppParts(): Promise<{
       repositoryScene.deleteSceneAudio,
       assertIsAuthorOfTheStory,
     ),
-    routeSaveAuthorName(
-      log,
-      repositoryAuthor.saveAuthorName,
-      assertIsAuthorOfTheStory,
-    ),
+    routeSaveAuthorName(log, repositoryAuthor.saveAuthorName, assertIsAuthor),
     routeSaveSceneContent(
       log,
       repositoryScene.saveSceneContent,
